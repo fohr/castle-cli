@@ -2,7 +2,7 @@ Summary: FS cli
 Name: castle-cli
 Version:        %{buildver}
 Release:        %{buildrev}
-License: No
+License: MIT
 Group: Filesystem
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
