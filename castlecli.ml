@@ -246,14 +246,27 @@ let _ =
 		~desc:"Create a new version"
 		~params:["reserved (must be 0)"];
 
+	(* TODO: deprecate *)
 	command "destroy" (fun conn -> function
 		| [id; "tree"] ->
-			destroy conn ~version:(Int32.of_string id) ~flag:Destroy_tree
+			destroy_vertree conn ~vertree:(Int32.of_string id)
 		| [id; "version"] ->
-			destroy conn ~version:(Int32.of_string id) ~flag:Destroy_version
+			delete_version conn ~version:(Int32.of_string id)
 		| _ -> raise Bad_arguments)
 		~desc:"Destroy a version or tree"
-                ~params:["id"; "tree|version"];
+		~params:["id"; "tree|version"];
+
+	command "destroy_vertree" (fun conn -> function
+		| [id] -> destroy_vertree conn ~vertree:(Int32.of_string id) 
+		| _ -> raise Bad_arguments)
+		~desc:"Destroy a version or tree"
+		~params:["id"];
+
+	command "delete_version" (fun conn -> function
+		| [id] -> delete_version conn ~version:(Int32.of_string id) 
+		| _ -> raise Bad_arguments)
+		~desc:"Destroy a version or tree"
+		~params:["id"];
 
 	command "clone" (fun conn -> function 
 		| [id] -> 
