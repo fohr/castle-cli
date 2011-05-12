@@ -5,7 +5,7 @@ SOURCES=castlecli.ml
 RESULT=castle-cli
 
 LIBS=
-PACKS=acunu_utils castle
+PACKS=castle,str
 
 THREADS=threads
 TRASH=*~ \\\#*
@@ -20,6 +20,7 @@ target: native-code
 install: target
 	install -d                  $(BUILD_ROOT)/usr/bin
 	install castle-cli          $(BUILD_ROOT)/usr/bin
+	mkdir -p $(BUILD_ROOT)/opt/acunu/castle/bin
 	ln -sfT /usr/bin/castle-cli $(BUILD_ROOT)/opt/acunu/castle/bin/objClient
 
 

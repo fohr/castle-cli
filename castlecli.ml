@@ -1,11 +1,6 @@
-open Utils
 open FSTypes2
 open Printf
 open Castle
-
-let rxrpc_host = "localhost"
-let rxrpc_port = 34876
-let rxrpc_service = 1
 
 type command = {
 	name: string;
@@ -19,11 +14,13 @@ let cmds : (string, command) Hashtbl.t = Hashtbl.create 10
 (** show keys/values in ASCII, rather than hex bytes *)
 let ascii_mode = ref true
 
+let startswith s s' = (String.sub s' 0 (String.length s)) = s
+
 let parse_hex_dimension s =
 	if s = "" then
 		""
 	else begin
-		if not (String.startswith "0x" s) then failwith "In hex mode, expected dimension of form 0x123456...";
+		if not (startswith "0x" s) then failwith "In hex mode, expected dimension of form 0x123456...";
 		let len = String.length s in
 		let s = String.sub s 2 (len - 2) in
 		(* For strings containing odd numbers of characters, prepend a '0'. *)
@@ -55,7 +52,7 @@ let str_to_obj_key s =
 		failwith guidance
 	else begin
 		let s = String.sub s 1 (len - 2) in
-		let elements = String.split_include_empty s ',' in
+		let elements = Str.split (Str.regexp_string ",") s in
 		Array.of_list (if !ascii_mode then List.map unescape elements else List.map parse_hex_dimension elements)
 	end
 
@@ -71,10 +68,31 @@ let sanitise s =
 		(* The string contained (escaped) binary chars. Instead just display the length of the string. *)
 		sprintf "[%d bytes]" (String.length s)
 
+(* produce two-character hex string for a char *)
+let hex_of_char c = sprintf "%.2x" (Char.code c)
+
+(* produce a string of space separated hex representations of a string's   *)
+(* chars. Useful for debugging marshaling stuff.                           *)
+let string_of_hex_buf ?(sep=true) s offset len =
+    let newlen = len * (if sep then 3 else 2) in
+    let buf = Buffer.create newlen in
+    for i = 0 to len - 1 do
+        let hl = hex_of_char s.[offset + i] in
+        Buffer.add_string buf hl;
+        if sep then Buffer.add_char buf ' '
+    done;
+    Buffer.contents buf
+
+(* variant of byte_array_to_string in which leading zeroes are not culled, *)
+(* and in which the 0x0 is missing *)
+let string_of_hex_bytes str = string_of_hex_buf ~sep:false str 0 (String.length str)
+
 let string_of_objvalue v =
 	match v with 
 		| Tombstone -> "<Tombstone>"
 		| Value v -> if !ascii_mode then sanitise v else "0x" ^ string_of_hex_bytes v
+
+let string_of_list ?(sep=";") f xs = String.concat sep (List.map f xs)
 
 let obj_key_to_string k =
 	if !ascii_mode then
@@ -336,7 +354,7 @@ let _ =
 		~params:["id"]
 
 let main () =
-	let connection = Castle.connect rxrpc_host rxrpc_port rxrpc_service in
+	let connection = Castle.connect "" 0 0 in
 
 	let execute tokens =
 		flush_all ();
@@ -365,7 +383,7 @@ let main () =
 			try begin
 				print_string "> ";
 				let line = read_line () in
-				let tokens = String.split_any line [' '; '\t'] in
+				let tokens = Str.split (Str.regexp_string " ") line in
 				match tokens with
 					| "help"::[] ->
 						print_endline help_msg
