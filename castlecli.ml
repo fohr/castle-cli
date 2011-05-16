@@ -466,7 +466,11 @@ let main () =
 			end
 			with
 				| End_of_file -> exit 0
-				| e -> prerr_endline (Printexc.to_string e); prerr_endline (Printexc.get_backtrace ())
+				| Unix.Unix_error (err_code, function_name, param) ->
+					prerr_endline (sprintf "Error: %s during %s(%s)" (Unix.error_message err_code) function_name param)
+				| e ->
+					prerr_endline (Printexc.to_string e);
+					prerr_endline (Printexc.get_backtrace ())
 		done
 	in
 	
