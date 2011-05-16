@@ -137,7 +137,26 @@ let string_of_objvalue v =
 		| Tombstone -> "<Tombstone>"
 		| Value v -> if !ascii_mode then sanitise v else "0x" ^ string_of_hex_bytes v
 
-let string_of_list ?(sep=";") f xs = String.concat sep (List.map f xs)
+(** string_of_list f arr produces the string "[x_0; x_1; x_2]", where xi is the
+    result of applying f to the ith element of arr. Optional param ~sep changes
+    the separator (default "; ") and ~ends allows you to disable the outer "[]".
+*)
+let string_of_list ?(sep = "; ") ?(ends=true) string_of_x x_list =
+	let buf = Buffer.create 16 in
+	if ends then Buffer.add_char buf '[';
+	let rec f = function
+		| [] ->
+			()
+		| elt::[] ->
+			Buffer.add_string buf (string_of_x elt);
+		| elt::next::rest ->
+			Buffer.add_string buf (string_of_x elt);
+			Buffer.add_string buf sep;
+			f (next::rest)
+	in
+	f x_list;
+	if ends then Buffer.add_char buf ']';
+	Buffer.contents buf
 
 let obj_key_to_string k =
 	if !ascii_mode then
