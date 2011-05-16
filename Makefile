@@ -5,7 +5,7 @@ SOURCES=castlecli.ml
 RESULT=castle-cli
 
 LIBS=
-PACKS=castle,str
+PACKS=castle
 
 THREADS=threads
 TRASH=*~ \\\#*

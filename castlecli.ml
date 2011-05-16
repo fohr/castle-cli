@@ -14,13 +14,58 @@ let cmds : (string, command) Hashtbl.t = Hashtbl.create 10
 (** show keys/values in ASCII, rather than hex bytes *)
 let ascii_mode = ref true
 
-let startswith s s' = (String.sub s' 0 (String.length s)) = s
+(** Add some helper functions. *)
+module String = struct
+	include String
+
+	let startswith phrase s =
+		let len = length phrase in
+		if length s < len
+		then false
+		else sub s 0 len = phrase
+
+	(** Splits string s on the character c, returning only strings of
+	    length >= 0 (NB!) and not containing c. *)
+	let split_include_empty s c =
+		let result = ref [] in
+		let start = ref ((String.length s - 1)) in
+		for i = String.length s - 1 downto 0 do
+			if s.[i] = c then
+			begin
+				result := (String.sub s (i + 1) (!start - i))::!result;
+				start := i-1
+			end
+		done;
+		result := (String.sub s 0 (!start + 1))::!result;
+		!result
+
+	(** Splits string s on the characters cs, returning only strings of
+	    length > 0 and not containing c. *)
+	let split_any s cs =
+		let result = ref [] in
+		let start = ref (-1) in
+		for i = String.length s - 1 downto 0 do
+			if List.mem s.[i] cs
+			then begin
+				if !start > -1
+				then begin
+					result := (String.sub s (i + 1) (!start - i))::!result;
+					start := -1
+				end
+			end else begin
+				if !start = -1
+				then start := i
+			end
+		done;
+		if !start >= 0 then result := (String.sub s 0 (!start + 1))::!result;
+		!result
+end
 
 let parse_hex_dimension s =
 	if s = "" then
 		""
 	else begin
-		if not (startswith "0x" s) then failwith "In hex mode, expected dimension of form 0x123456...";
+		if not (String.startswith "0x" s) then failwith "In hex mode, expected dimension of form 0x123456...";
 		let len = String.length s in
 		let s = String.sub s 2 (len - 2) in
 		(* For strings containing odd numbers of characters, prepend a '0'. *)
@@ -52,7 +97,7 @@ let str_to_obj_key s =
 		failwith guidance
 	else begin
 		let s = String.sub s 1 (len - 2) in
-		let elements = Str.split (Str.regexp_string ",") s in
+		let elements = String.split_include_empty s ',' in
 		Array.of_list (if !ascii_mode then List.map unescape elements else List.map parse_hex_dimension elements)
 	end
 
@@ -396,7 +441,7 @@ let main () =
 			try begin
 				print_string "> ";
 				let line = read_line () in
-				let tokens = Str.split (Str.regexp_string " ") line in
+				let tokens = String.split_any line [' '; '\t'] in
 				match tokens with
 					| "help"::[] ->
 						print_endline help_msg
