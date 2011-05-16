@@ -9,7 +9,6 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 
 Provides:       %{name}-%{changesetver}
 
-BuildRequires: ocaml-utils
 BuildRequires: ocaml-findlib
 BuildRequires: ocaml-castle
 BuildRequires: libcastle-devel
