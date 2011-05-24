@@ -326,6 +326,12 @@ let _ =
 		~desc:"Destroy a version or tree"
 		~params:["id"];
 
+	command "vertree_compact" (fun conn -> function
+		| [id] -> vertree_compact conn ~vertree:(Int32.of_string id) 
+		| _ -> raise Bad_arguments)
+		~desc:"Compact all component trees in version tree."
+		~params:["id"];
+
 	command "delete_version" (fun conn -> function
 		| [id] -> delete_version conn ~version:(Int32.of_string id) 
 		| _ -> raise Bad_arguments)
