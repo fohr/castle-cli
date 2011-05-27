@@ -267,13 +267,6 @@ let _ =
 		~desc:"Claims a device for the FS to use"
 		~params:["device:string"];
 
-	command "release" (fun conn -> function 
-		| [id] ->
-			release conn ~disk:(Int32.of_string id)
-		| _ -> raise Bad_arguments)
-		~desc:"Releases a device from FS use"
-		~params:["disk_id"];
-
 	command "attach" (fun conn -> function 
 		| [id] -> 
 			let device = attach conn ~version:(Int32.of_string id) in
