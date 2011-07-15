@@ -1,11 +1,7 @@
-%if !%{release}
-%define release 1
-%endif
-
 Summary: FS cli
 Name: castle-cli
 Version:        @@SOURCEVER@@
-Release:        %{release}
+Release:        %{?release}%{?!release:1}
 License: MIT
 Group: Filesystem
 Source0: %{name}-%{version}.tar.gz
