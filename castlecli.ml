@@ -221,9 +221,12 @@ let _ =
 		
 	command "iter_start" (fun conn -> function
 		| [c; start; finish; batch_size] -> 
-			let t, arr = iter_start conn (Int32.of_string c) (str_to_obj_key start) (str_to_obj_key finish) (int_of_string batch_size) in
+			let t, more, arr = iter_start conn (Int32.of_string c) (str_to_obj_key start) (str_to_obj_key finish) (int_of_string batch_size) in
 				print_endline (string_of_kvs arr);
-				printf "token = %ld\n" t
+                                printf "token = %ld\n" t;
+                                if more
+                                then printf "no more\n"
+                                else printf "more\n"
 		| _ -> raise Bad_arguments)
 		~desc:"Create a new range query iterator"
                 ~params:["collection_id:int"; "key start"; "key finish"; "batch_size:int (must be >= 4096)"];
