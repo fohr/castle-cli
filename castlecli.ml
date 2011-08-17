@@ -220,18 +220,22 @@ let _ =
 		~params:["collection_id:int"; "key0"; "value0"; "..."; "keyN"; "valueN"];
 		
 	command "iter_start" (fun conn -> function
-		| [c; start; finish] -> 
-			let t = iter_start conn (Int32.of_string c) (str_to_obj_key start) (str_to_obj_key finish) in
+		| [c; start; finish; batch_size] -> 
+			let t, arr = iter_start conn (Int32.of_string c) (str_to_obj_key start) (str_to_obj_key finish) (int_of_string batch_size) in
+				print_endline (string_of_kvs arr);
 				printf "token = %ld\n" t
 		| _ -> raise Bad_arguments)
 		~desc:"Create a new range query iterator"
-		~params:["collection_id:int"; "key start"; "key finish"];
+                ~params:["collection_id:int"; "key start"; "key finish"; "batch_size:int (must be >= 4096)"];
 
 	command "iter_next" (fun conn -> function
 		| [token; batch_size] ->
-			let arr = iter_next conn (Int32.of_string token) (int_of_string batch_size) in
+			let more, arr = iter_next conn (Int32.of_string token) (int_of_string batch_size) in
 				print_endline (string_of_kvs arr);
-				printf "%d result(s)\n" (Array.length arr)
+				printf "%d result(s)\n" (Array.length arr);
+				if more
+				then printf "no more\n"
+				else printf "more\n" 
 		| _ -> raise Bad_arguments)
 		~desc:"Return the next batch of key value pairs for an existing iterator"
 		~params:["token:int"; "batch_size:int (must be >= 4096)"];
