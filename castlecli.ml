@@ -379,8 +379,7 @@ let _ =
 
 	command "collection_reattach" (fun conn -> function 
 		| [id; new_version] -> 
-			let collection = collection_reattach conn ~collection:(Int32.of_string id) ~new_version:(Int32.of_string new_version) in
-				printf "0x%lx\n" collection
+			collection_reattach conn ~collection:(Int32.of_string id) ~new_version:(Int32.of_string new_version)
 		| _ -> raise Bad_arguments)
 		~desc:"Reattach the given collection to the given version"
 		~params:["collection_id:int"; "new_version:int"];
