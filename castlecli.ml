@@ -441,7 +441,17 @@ let _ =
         	slave_scan conn ~id:(Int32.of_string id)
 		| _ -> raise Bad_arguments)
 		~desc:"Start slave scan."
-		~params:["id"]
+		~params:["id"];
+
+	command "ctrl_prog_deregister" (fun conn -> function
+		| [shutdown] ->
+			let pid = ctrl_prog_deregister conn ~shutdown:(bool_of_string shutdown) in
+				printf "%ld\n" pid
+		| _ -> raise Bad_arguments)
+		~desc:"Request control program shutdown."
+		~params:["shutdown:bool"];
+
+	()
 
 let main () =
 	let connection = Castle.connect "" 0 0 in
