@@ -454,7 +454,7 @@ let _ =
 	()
 
 let main () =
-	let connection = Castle.connect "" 0 0 in
+	let connection = Castle.connect () in
 
 	let execute tokens =
 		flush_all ();
