@@ -1,5 +1,7 @@
-open FSTypes2
+open Utils
 open Printf
+
+open FSTypes2
 open Castle
 
 type command = {
@@ -10,6 +12,18 @@ type command = {
 }
 
 let cmds : (string, command) Hashtbl.t = Hashtbl.create 10
+
+let rda_type_of_string = function
+	| "RDA_1" -> RDA_1
+	| "RDA_2" -> RDA_2
+	| "SSD_RDA_2" -> SSD_RDA_2
+	| "SSD_RDA_3" -> SSD_RDA_3
+	| "META_EXT" -> META_EXT
+	| "MICRO_EXT" -> MICRO_EXT
+	| "SUPER_EXT" -> SUPER_EXT
+	| "SSD_ONLY_EXT" -> SSD_ONLY_EXT
+	| "NR_RDA_SPECS" -> NR_RDA_SPECS
+	| x -> failwithf "Unrecognised rda_type %s" x
 
 (** show keys/values in ASCII, rather than hex bytes *)
 let ascii_mode = ref true
@@ -101,6 +115,28 @@ let str_to_obj_key s =
 		Array.of_list (if !ascii_mode then List.map unescape elements else List.map parse_hex_dimension elements)
 	end
 
+let int32_list_of_string s =
+	let guidance = "List must be given as '[id0,id1,...]'." in
+	let len = String.length s in
+	if len < 2 || s.[0] <> '[' || s.[len - 1] <> ']' then
+		failwith guidance
+	else begin
+		let s = String.sub s 1 (len - 2) in
+		let elements = String.split s ',' in
+		List.map Int32.of_string elements
+	end
+
+let int64_list_of_string s =
+	let guidance = "List must be given as '[id0,id1,...]'." in
+	let len = String.length s in
+	if len < 2 || s.[0] <> '[' || s.[len - 1] <> ']' then
+		failwith guidance
+	else begin
+		let s = String.sub s 1 (len - 2) in
+		let elements = String.split s ',' in
+		List.map Int64.of_string elements
+	end
+
 (** force display of (escaped) chars in ascii mode; if false, just show '[x bytes]' if a key or value contains unprintable chars *)
 let force_display = ref false
 
@@ -171,7 +207,7 @@ let string_of_kvs kvps =
 	string_of_list (fun (k,v) -> sprintf "%s=%s" (obj_key_to_string k) (string_of_objvalue v)) (Array.to_list kvps)
 
 let command name f ~desc ~params =
-	Hashtbl.add cmds name {name=name; f=f; desc=desc; params=params}
+	Hashtbl.replace cmds name {name=name; f=f; desc=desc; params=params}
 
 exception Bad_arguments
 
@@ -450,6 +486,28 @@ let _ =
 		| _ -> raise Bad_arguments)
 		~desc:"Request control program shutdown."
 		~params:["shutdown:bool"];
+
+	command "merge_start" (fun conn -> function
+		| [arrays; data_exts; metadata_ext_type; data_ext_type; bandwidth] ->
+			let arrays = int32_list_of_string arrays in
+			let data_exts = int64_list_of_string data_exts in
+			let metadata_ext_type = rda_type_of_string metadata_ext_type in
+			let data_ext_type = rda_type_of_string data_ext_type in
+			let bandwidth = Int32.of_string bandwidth in
+			let merge_cfg =
+				{
+					m_arrays = arrays;
+					m_data_exts = data_exts;
+					m_metadata_ext_type = metadata_ext_type;
+					m_data_ext_type = data_ext_type;
+					m_bandwidth = bandwidth;
+				}
+			in
+			let result = merge_start conn ~merge_cfg in
+				printf "%ld\n" result
+		| _ -> raise Bad_arguments)
+		~desc:"???."
+		~params:["arrays: int32 list"; "data_exts: int64 list"; "metadata_ext_type: rda_type"; "data_ext_type: rda_type"; "bandwidth: int32"];
 
 	()
 
