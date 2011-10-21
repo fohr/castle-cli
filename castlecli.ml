@@ -490,7 +490,10 @@ let _ =
 	command "merge_start" (fun conn -> function
 		| [arrays; data_exts; metadata_ext_type; data_ext_type; bandwidth] ->
 			let arrays = int32_list_of_string arrays in
-			let data_exts = int64_list_of_string data_exts in
+			let data_exts = match data_exts with
+				| "all" -> None
+				| list -> Some (int64_list_of_string list)
+			in
 			let metadata_ext_type = rda_type_of_string metadata_ext_type in
 			let data_ext_type = rda_type_of_string data_ext_type in
 			let bandwidth = Int32.of_string bandwidth in
@@ -507,7 +510,7 @@ let _ =
 				printf "%ld\n" result
 		| _ -> raise Bad_arguments)
 		~desc:"???."
-		~params:["arrays: int32 list"; "data_exts: int64 list"; "metadata_ext_type: rda_type"; "data_ext_type: rda_type"; "bandwidth: int32"];
+		~params:["arrays: int32 list"; "data_exts: 'all' or int64 list"; "metadata_ext_type: rda_type"; "data_ext_type: rda_type"; "bandwidth: int32"];
 
 	()
 
