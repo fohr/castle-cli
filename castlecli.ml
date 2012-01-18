@@ -487,6 +487,14 @@ let _ =
 		~desc:"Request control program shutdown."
 		~params:["shutdown:bool"];
 
+	command "state_query" (fun conn -> function
+		| [] ->
+			let state = state_query conn in
+				printf "%ld\n" state
+        | _ -> raise Bad_arguments)
+		~desc:"Queries FS state, return values: 0 - loading, 1 - loaded, but not inited, 2 - inited"
+		~params:[];
+
 	command "merge_start" (fun conn -> function
 		| [arrays; data_exts; metadata_ext_type; data_ext_type; bandwidth] ->
 			let arrays = int32_list_of_string arrays in
