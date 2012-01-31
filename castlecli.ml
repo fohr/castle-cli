@@ -230,18 +230,22 @@ let _ =
 		~params:["collection"; "key"; "key"; "limit"];
 
 	command "replace" (fun conn -> function 
+		| [c; k; v; t] ->
+			replace conn (Int32.of_string c) ~timestamp:(Int64.of_string t) (str_to_obj_key k) (str_to_val v)
 		| [c; k; v] -> 
 			replace conn (Int32.of_string c) (str_to_obj_key k) (str_to_val v)
 		| _ -> raise Bad_arguments)
 		~desc:"Replace a value for the given key in the given collection"
-		~params:["collection_id:int"; "key"; "value:string"];
+		~params:["collection_id:int"; "key"; "value:string"; "[int:timestamp]"];
 
 	command "delete" (fun conn -> function
+		| [c; k; t] ->
+			remove conn (Int32.of_string c) ~timestamp:(Int64.of_string t) (str_to_obj_key k)
 		| [c; k] -> 
 			remove conn (Int32.of_string c) (str_to_obj_key k)
 		| _ -> raise Bad_arguments)
 		~desc:"Delete any value for the given key in the given collection (i.e. replace with a Tombstone)"
-		~params:["collection_id"; "key"];
+		~params:["collection_id"; "key"; "[int:timestamp]"];
 
 	command "multi_replace" (fun conn -> function
 		| c::kvps ->
