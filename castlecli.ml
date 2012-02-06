@@ -494,7 +494,7 @@ let _ =
 	command "state_query" (fun conn -> function
 		| [] ->
 			let state = state_query conn in
-				printf "%ld\n" state
+			printf "%s\n" (string_of_castle_state state)
         | _ -> raise Bad_arguments)
 		~desc:"Queries FS state, return values: 0 - loading, 1 - loaded, but not inited, 2 - inited"
 		~params:[];
