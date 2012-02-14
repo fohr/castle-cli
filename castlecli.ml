@@ -500,7 +500,8 @@ let _ =
 		~params:[];
 
 	command "merge_start" (fun conn -> function
-		| [arrays; data_exts; metadata_ext_type; data_ext_type; bandwidth] ->
+		| [vertree; arrays; data_exts; metadata_ext_type; data_ext_type; bandwidth] ->
+			let vertree = Int32.of_string vertree in
 			let arrays = int32_list_of_string arrays in
 			let data_exts = match data_exts with
 				| "all" -> None
@@ -511,6 +512,7 @@ let _ =
 			let bandwidth = Int32.of_string bandwidth in
 			let merge_cfg =
 				{
+					m_vertree = vertree;
 					m_arrays = arrays;
 					m_data_exts = data_exts;
 					m_metadata_ext_type = metadata_ext_type;
